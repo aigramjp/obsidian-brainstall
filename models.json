@@ -1,0 +1,128 @@
+{
+  "openai": [
+    {
+      "id": "o1",
+      "name": "o1"
+    },
+    {
+      "id": "o1-preview",
+      "name": "o1-preview"
+    },
+    {
+      "id": "o1-mini",
+      "name": "o1-mini"
+    },
+    {
+      "id": "gpt-4o",
+      "name": "gpt-4o"
+    },
+    {
+      "id": "gpt-4o-mini",
+      "name": "gpt-4o-mini"
+    },
+    {
+      "id": "gpt-4.5-preview",
+      "name": "gpt-4.5-preview"
+    },
+    {
+      "id": "gpt-4.1",
+      "name": "gpt-4.1"
+    },
+    {
+      "id": "gpt-4.1-nano",
+      "name": "gpt-4.1-nano"
+    },
+    {
+      "id": "gpt-4.1-mini",
+      "name": "gpt-4.1-mini"
+    },
+    {
+      "id": "gpt-5",
+      "name": "gpt-5"
+    },
+    {
+      "id": "gpt-5-mini",
+      "name": "gpt-5-mini"
+    },
+    {
+      "id": "gpt-4-turbo",
+      "name": "gpt-4-turbo"
+    },
+    {
+      "id": "gpt-4",
+      "name": "gpt-4"
+    },
+    {
+      "id": "gpt-3.5-turbo",
+      "name": "gpt-3.5-turbo"
+    }
+  ],
+  "groq": [
+    {
+      "id": "qwen/qwen3-32b",
+      "name": "qwen3-32b"
+    },
+    {
+      "id": "llama-3.1-8b-instant",
+      "name": "llama-3.1-8b"
+    },
+    {
+      "id": "llama-3.3-70b-versatile",
+      "name": "llama-3.3-70b"
+    },
+    {
+      "id": "meta-llama/llama-4-scout-17b-16e-instruct",
+      "name": "llama-4-scout-17b"
+    },
+    {
+      "id": "meta-llama/llama-4-maverick-17b-128e-instruct",
+      "name": "llama-4-maverick-17b"
+    },
+    {
+      "id": "qwen-qwq-32b",
+      "name": "qwen-qwq-32b"
+    }
+  ],
+  "claude": [
+    {
+      "id": "claude-3-7-sonnet-20250219",
+      "name": "claude-3-7-sonnet"
+    },
+    {
+      "id": "claude-3-sonnet-20240229",
+      "name": "claude-3-sonnet"
+    },
+    {
+      "id": "claude-3-opus-latest",
+      "name": "claude-3-opus"
+    },
+    {
+      "id": "claude-3-haiku-20240307",
+      "name": "claude-3-haiku"
+    },
+    {
+      "id": "claude-3-5-sonnet-latest",
+      "name": "claude-3-5-sonnet"
+    },
+    {
+      "id": "claude-3-5-haiku-latest",
+      "name": "claude-3-5-haiku"
+    },
+    {
+      "id": "claude-sonnet-4-20250514",
+      "name": "claude-sonnet-4"
+    },
+    {
+      "id": "claude-haiku-4-5-20251001",
+      "name": "claude-haiku-4.5"
+    },
+    {
+      "id": "claude-opus-4-20250514",
+      "name": "claude-opus-4"
+    },
+    {
+      "id": "claude-opus-4-1-20250805",
+      "name": "claude-opus-4.1"
+    }
+  ]
+}

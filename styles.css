@@ -1,0 +1,1131 @@
+/* Brainstall Styles */
+
+/* コンテナをflexboxにする */
+.workspace-leaf-content[data-type="brainstall-view"] .view-content {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 100vh;
+	background: transparent;
+}
+
+.notification-section {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	position: relative;
+	padding-bottom: 0;
+	margin-bottom: 0;
+	background: transparent;
+	padding-bottom: 40px;
+	margin-bottom: 0;
+}
+
+.brainstall-header h2 {
+	margin: 0;
+	flex: 1;
+}
+
+.brainstall-header button {
+	margin-left: auto;
+}
+
+.brainstall-header-btn {
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 4px 8px;
+}
+
+.brainstall-sections {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 20px;
+	padding: 0 4px;
+}
+
+.brainstall-section {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background: var(--background-secondary);
+	padding: 8px 20px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: all 0.2s;
+	color: var(--text-normal);
+}
+
+.brainstall-section:hover {
+	border-color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+}
+
+.brainstall-section.active {
+	border-color: var(--interactive-accent);
+	background: var(--interactive-accent);
+	color: white;
+	box-shadow: 0 2px 4px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+.brainstall-input-section {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	width: 100%;
+	padding: 20px;
+	padding-top: 10px;
+	padding-bottom: 40px;
+	background: var(--background-secondary);
+	border-top: 1px solid var(--background-modifier-border);
+	box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+	z-index: 1001;
+	transition: all 0.3s ease;
+	max-height: 50vh;
+	overflow-y: auto;
+}
+
+.brainstall-input-close-btn:hover {
+	background: var(--background-modifier-border);
+	transform: scale(1.1);
+}
+
+.brainstall-input-close-btn:active {
+	transform: scale(0.95);
+}
+
+.brainstall-input-section.hidden {
+	transform: translateY(100%);
+	opacity: 0;
+	pointer-events: none;
+}
+
+.brainstall-input-section.visible {
+	transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
+	animation: slideUpFromBottom 0.3s ease;
+}
+
+@keyframes slideUpFromBottom {
+	from {
+		opacity: 0;
+		transform: translateY(100%);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.brainstall-floating-button {
+	position: fixed;
+	bottom: calc(64px + 24px + 12px + env(safe-area-inset-bottom) + 20px); /* ボトムナビゲーション（min-height: 64px + padding: 12px*2 = 24px）+ safe-area + マージン20px */
+	right: 30px;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	color: white;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	z-index: 1000;
+	transition: all 0.3s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.brainstall-floating-button:hover {
+	background: var(--interactive-accent-hover);
+	transform: scale(1.1);
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.brainstall-floating-button.hidden {
+	display: none;
+}
+
+.brainstall-input-overlay {
+	position: fixed;
+	left: 0;
+	right: 0;
+	background: transparent !important;
+	z-index: 1000;
+	pointer-events: none; /* 後ろの要素を操作できるようにする */
+	/* topとbottomはJavaScriptで動的に設定される */
+}
+
+.brainstall-input-overlay.hidden {
+	display: none;
+}
+
+.brainstall-input-label {
+	margin: 0;
+}
+
+.brainstall-active-file-display {
+	padding: 8px 30px 8px 12px; /* top right bottom left - クリアボタン（24px幅、right:8px）のスペース確保 */
+	margin-bottom: 10px;
+	background: var(--background-modifier-hover);
+	border-radius: 6px;
+	font-size: 13px;
+	color: var(--text-normal);
+	font-weight: 500;
+	transition: background-color 0.2s ease;
+	position: relative;
+	width: 100%;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+}
+
+.brainstall-active-file-content {
+	flex: 1;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.brainstall-active-file-display:hover {
+	background: var(--background-modifier-border);
+}
+
+.brainstall-clear-file-btn {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--background-modifier-border);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: 18px;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	padding: 0;
+	opacity: 0.8;
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 100;
+}
+
+.brainstall-clear-file-btn:hover {
+	background: var(--interactive-accent);
+	color: white;
+	transform: translateY(-50%) scale(1.1);
+	opacity: 1;
+}
+
+.brainstall-clear-file-btn:active {
+	transform: translateY(-50%) scale(0.95);
+}
+
+.brainstall-textarea-wrapper {
+	position: relative;
+	width: 100%;
+}
+
+.brainstall-input,
+textarea.brainstall-input {
+	width: 100%;
+	margin-bottom: 0;
+	padding: 12px 16px;
+	padding-bottom: 48px; /* 閉じるボタンの分だけ下にパディング */
+	font-size: 16px; /* iOSの自動ズームを防ぐために16px以上に設定 */
+	line-height: 1.6;
+	font-family: var(--font-text);
+	color: white !important;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	resize: vertical;
+	min-height: 120px;
+	transition: border-color 0.2s ease;
+	/* iOSの自動ズームを防ぐ */
+	touch-action: manipulation;
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+.brainstall-input-close-btn {
+	position: absolute;
+	bottom: 8px;
+	right: 8px;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	z-index: 10;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	pointer-events: auto;
+}
+
+.brainstall-input:focus,
+textarea.brainstall-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
+	color: white !important;
+}
+
+.brainstall-input::placeholder {
+	color: var(--text-muted);
+	opacity: 0.7;
+}
+
+.brainstall-input-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-top: 8px;
+}
+
+.brainstall-input-buttons button {
+	padding: 4px 12px;
+	flex-shrink: 0;
+}
+
+.brainstall-deep-dive-btn {
+	padding: 4px 12px;
+	background: var(--interactive-success);
+	color: white;
+}
+
+.brainstall-tabs {
+	display: flex;
+	gap: 0;
+	margin-top: auto;
+	padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+	justify-content: space-around;
+	align-items: center;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: var(--background-primary);
+	border-top: 1px solid var(--background-modifier-border);
+	z-index: 100;
+	box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.brainstall-refresh-btn {
+	background: transparent !important;
+	border: none;
+	cursor: pointer;
+	padding: 6px 10px;
+	font-size: 16px;
+	color: var(--text-muted);
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	outline: none !important;
+	box-shadow: none !important;
+	flex-shrink: 0;
+}
+
+.brainstall-refresh-btn:hover {
+	color: var(--text-normal);
+	background: transparent !important;
+}
+
+.brainstall-refresh-btn:active {
+	transform: scale(0.95);
+	background: transparent !important;
+}
+
+.brainstall-refresh-btn:focus {
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+.brainstall-refresh-btn:focus-visible {
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+.brainstall-tabs.hidden {
+	display: none;
+}
+
+.notification-section.hidden {
+	display: none;
+}
+
+.analysis-section.hidden {
+	display: none;
+}
+
+.brainstall-tab {
+	border: none;
+	background: transparent;
+	border-bottom: none;
+	padding: 12px 20px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	color: var(--text-muted);
+	font-size: 12px;
+	border-radius: 8px;
+	margin: 0 4px;
+	min-height: 64px;
+}
+
+.brainstall-tab:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.brainstall-tab.active {
+	border-bottom-color: transparent;
+	color: var(--interactive-accent);
+	font-weight: 600;
+	background: var(--background-modifier-hover);
+	position: relative;
+}
+
+.brainstall-tab-icon {
+	font-size: 24px;
+	line-height: 1;
+}
+
+.brainstall-tab-label {
+	font-size: 13px;
+	line-height: 1.2;
+	margin-top: 2px;
+	font-weight: 500;
+}
+
+.brainstall-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	background: transparent;
+}
+
+.brainstall-content > div {
+	display: none;
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	background: transparent;
+}
+
+.brainstall-content > div.active {
+	display: flex;
+	flex-direction: column;
+	background: transparent;
+}
+
+.brainstall-content > div.hidden {
+	display: none;
+}
+
+.brainstall-preview-container.hidden,
+.brainstall-preview-buttons.hidden {
+	display: none;
+}
+
+.brainstall-posts {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	padding-bottom: 0;
+	margin-bottom: 0;
+}
+
+.brainstall-posts-header {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 10px 0;
+	flex-shrink: 0;
+}
+
+.brainstall-header-title-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.brainstall-header-title-row h3 {
+	margin: 0;
+	flex: 1;
+}
+
+.brainstall-header-filter-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.brainstall-filter-btn {
+	padding: 4px 12px;
+}
+
+.brainstall-clear-btn {
+	padding: 4px 8px;
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	margin-left: 4px;
+	flex-shrink: 0;
+}
+
+.brainstall-clear-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.brainstall-hashtag-select,
+.brainstall-date-select,
+.brainstall-type-select,
+.brainstall-priority-select {
+	flex: 1;
+	min-width: 120px;
+	max-width: 400px;
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.brainstall-priority-select[multiple] {
+	overflow-y: auto;
+}
+
+.brainstall-priority-select[multiple] option:disabled {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.brainstall-posts-list {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding-bottom: 100px;
+	margin-bottom: 0;
+}
+
+.brainstall-post {
+	position: relative;
+	padding: 15px;
+	margin-bottom: 10px;
+	background: var(--background-secondary);
+	border-radius: 6px;
+	cursor: pointer;
+	position: relative;
+}
+
+.brainstall-post:hover {
+	background: var(--background-modifier-hover);
+}
+
+.brainstall-post.archived {
+	background: rgba(var(--text-muted-rgb), 0.05);
+	opacity: 0.7;
+}
+
+.brainstall-post.archived .brainstall-post-content {
+	text-decoration: line-through;
+}
+
+.brainstall-post.pinned {
+	border-left: 3px solid var(--interactive-accent);
+	background: var(--background-modifier-border);
+}
+
+.brainstall-post.pinned:hover {
+	background: var(--background-modifier-hover);
+}
+
+.brainstall-date-priority-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 5px;
+}
+
+.brainstall-post-date {
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+.brainstall-priority-stars {
+	display: flex;
+	gap: 2px;
+	cursor: pointer;
+}
+
+.brainstall-priority-star {
+	font-size: 14px;
+	cursor: pointer;
+	user-select: none;
+	transition: transform 0.1s ease;
+}
+
+.brainstall-priority-star.blank {
+	opacity: 0.3;
+}
+
+.brainstall-priority-star:hover {
+	transform: scale(1.2);
+}
+
+.brainstall-post-content {
+	line-height: 1.6;
+	padding-bottom: 0;
+	margin-bottom: 0;
+}
+
+.brainstall-post-content a[href^="#"] {
+	color: var(--interactive-accent);
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+.brainstall-post-content a[href^="#"]:hover {
+	opacity: 0.8;
+}
+
+.brainstall-post-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	pointer-events: none;
+	align-items: flex-end;
+}
+
+.brainstall-post:hover .brainstall-post-actions {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.brainstall-bottom-actions {
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 12px;
+	background: transparent;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	pointer-events: none;
+	border-radius: 0 0 6px 6px;
+	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.brainstall-post:hover .brainstall-bottom-actions {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.brainstall-bottom-action-btn {
+	flex: 1;
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-secondary);
+	cursor: pointer;
+	font-size: 13px;
+	transition: background-color 0.2s ease;
+	text-align: center;
+}
+
+.brainstall-bottom-action-btn:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.brainstall-move-btn-container {
+	text-align: right;
+	padding: 0;
+	margin: 0;
+	position: absolute;
+	bottom: 8px;
+	right: 8px;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	pointer-events: none;
+}
+
+.brainstall-post:hover .brainstall-move-btn-container {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.brainstall-move-btn {
+	padding: 4px 8px;
+}
+
+.brainstall-post-actions button {
+	padding: 4px 8px;
+	flex-shrink: 0;
+}
+
+.brainstall-post-actions .brainstall-right-actions {
+	display: flex;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.brainstall-empty {
+	text-align: center;
+	padding: 40px;
+	color: var(--text-muted);
+}
+
+.brainstall-grass-title {
+	font-size: 16px;
+	margin-bottom: 20px;
+	font-weight: 600;
+}
+
+.brainstall-grass-grid {
+	display: grid;
+	gap: 8px;
+}
+
+.brainstall-grass-row {
+	display: grid;
+	grid-template-columns: 35px repeat(12, 1fr);
+	gap: 3px;
+}
+
+.brainstall-grass-week-label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--text-muted);
+}
+
+.brainstall-grass-cell {
+	aspect-ratio: 1;
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: 500;
+	border: 1px solid var(--background-modifier-border);
+	transition: all 0.2s;
+}
+
+.brainstall-grass-cell:hover {
+	transform: scale(1.05);
+	border-color: var(--interactive-accent);
+	z-index: 1;
+}
+
+.brainstall-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 15px;
+}
+
+.brainstall-stat-card {
+	padding: 15px;
+	background: var(--background-secondary);
+	border-radius: 6px;
+	text-align: center;
+}
+
+.brainstall-stat-label {
+	font-size: 13px;
+	color: var(--text-muted);
+	margin-bottom: 8px;
+}
+
+.brainstall-stat-value {
+	font-size: 24px;
+	font-weight: 600;
+}
+
+.brainstall-analysis-content {
+	padding: 20px;
+}
+
+.brainstall-analyze-btn {
+	padding: 12px 24px;
+	background: var(--interactive-accent);
+	color: white;
+	border: none;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.brainstall-analyze-btn:hover {
+	background: var(--interactive-accent-hover);
+	transform: translateY(-1px);
+}
+
+.brainstall-prompt-label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: var(--text-normal);
+}
+
+.brainstall-prompt-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.brainstall-prompt-input {
+	flex: 1;
+	padding: 8px;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	font-family: var(--font-text);
+	font-size: 14px;
+}
+
+.brainstall-analyze-btn {
+	padding: 8px 16px;
+	background: var(--interactive-accent);
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.brainstall-provider-container,
+.brainstall-model-container {
+	margin-bottom: 16px;
+	position: relative;
+}
+
+.brainstall-provider-select,
+.brainstall-model-select {
+	width: 100%;
+	padding: 8px;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	font-size: 14px;
+}
+
+.brainstall-provider-select option,
+.brainstall-model-select option {
+	padding: 8px;
+	background: var(--background-primary);
+}
+
+.brainstall-modal-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.brainstall-modal-backdrop.hidden {
+	display: none;
+}
+
+.brainstall-modal-content {
+	width: 80%;
+	max-width: 800px;
+	height: 80vh;
+	background: var(--background-primary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+	display: flex;
+	flex-direction: column;
+}
+
+.brainstall-modal-header {
+	padding: 16px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.brainstall-modal-close {
+	background: transparent;
+	border: none;
+	font-size: 20px;
+	cursor: pointer;
+	padding: 4px 8px;
+}
+
+.brainstall-modal-textarea {
+	flex: 1;
+	padding: 16px;
+	border: none;
+	resize: none;
+	font-family: var(--font-text);
+	font-size: 14px;
+	overflow-y: auto;
+}
+
+.brainstall-modal-save {
+	padding: 12px 24px;
+	margin: 16px;
+	background: var(--interactive-accent);
+	color: white;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-weight: 500;
+}
+
+.brainstall-modal-save:hover {
+	opacity: 0.9;
+}
+
+.brainstall-preview-container h4 {
+	margin: 0 0 12px 0;
+}
+
+.brainstall-preview-content {
+	max-height: 400px;
+	overflow-y: auto;
+	padding: 12px;
+	background: var(--background-primary);
+	border-radius: 4px;
+	white-space: pre-wrap;
+	font-family: var(--font-monospace);
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.brainstall-preview-buttons {
+	display: flex;
+	gap: 12px;
+	margin-top: 16px;
+	justify-content: flex-end;
+}
+
+.brainstall-preview-btn {
+	padding: 8px 16px;
+	border: none;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.brainstall-save-btn {
+	background: var(--interactive-accent);
+	color: white;
+}
+
+.brainstall-save-btn:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.brainstall-cancel-btn {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.brainstall-cancel-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.brainstall-analysis-header {
+	margin-bottom: 20px;
+}
+
+.brainstall-post.skeleton {
+	animation: pulse 1.5s ease-in-out infinite;
+	pointer-events: none;
+}
+
+.brainstall-skeleton-line {
+	height: 16px;
+	background: var(--background-modifier-border);
+	border-radius: 4px;
+	margin-bottom: 8px;
+	animation: shimmer 1.5s infinite;
+}
+
+.brainstall-skeleton-line:first-child {
+	width: 80%;
+}
+
+.brainstall-skeleton-line:last-child {
+	width: 60%;
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
+}
+
+@keyframes shimmer {
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
+}
+
+.brainstall-reference {
+	padding: 20px;
+	overflow-y: auto;
+	flex: 1;
+	min-height: 0;
+}
+
+.brainstall-reference-header {
+	margin-bottom: 20px;
+}
+
+.brainstall-reference-header h3 {
+	margin: 0 0 10px 0;
+}
+
+.brainstall-reference-section {
+	margin-bottom: 30px;
+}
+
+.brainstall-reference-section h4 {
+	margin: 0 0 10px 0;
+	font-size: 14px;
+	color: var(--text-normal);
+}
+
+.brainstall-reference-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.brainstall-reference-item {
+	padding: 8px 12px;
+	background: var(--background-secondary);
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.brainstall-reference-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.brainstall-reference-item a {
+	color: var(--interactive-accent);
+	text-decoration: none;
+}
+
+.brainstall-reference-item a:hover {
+	text-decoration: underline;
+}
+
+.brainstall-reference-item-wrapper {
+	margin-bottom: 8px;
+}
+
+.brainstall-reference-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.brainstall-reference-item span {
+	flex: 1;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.brainstall-reference-item.expanded {
+	background: var(--background-modifier-hover);
+}
+
+.brainstall-reference-open-newtab-btn {
+	padding: 8px 16px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.2s ease;
+}
+
+.brainstall-reference-open-newtab-btn:hover {
+	background: var(--interactive-accent);
+	color: white;
+	border-color: var(--interactive-accent);
+}
+
+.brainstall-reference-preview {
+	margin-top: 8px;
+	padding: 12px;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.brainstall-reference-preview.hidden {
+	display: none;
+}
+
+.brainstall-reference-preview-content {
+	font-size: 14px;
+	line-height: 1.6;
+}
