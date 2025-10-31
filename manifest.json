@@ -1,9 +1,9 @@
 {
-  "id": "obsidian-brainstall",
-  "name": "brainstall",
+  "id": "brainstall",
+  "name": "Brainstall",
   "version": "0.1.0",
   "minAppVersion": "0.15.0",
-  "description": "Brainstall is a plugin for Obsidian that allows you to install and manage plugins.",
+  "description": "A lightweight Obsidian plugin for intuitive log creation, organization, and AI-powered insights—designed to record thoughts like emails and archive them seamlessly.",
   "author": "AIGRAM Inc.",
   "isDesktopOnly": false
 }
