@@ -1,9 +1,9 @@
 {
   "id": "brainstall",
   "name": "Brainstall",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "minAppVersion": "0.15.0",
-  "description": "A lightweight Obsidian plugin for intuitive log creation, organization, and AI-powered insights—designed to record thoughts like emails and archive them seamlessly.",
+  "description": "A lightweight plugin for intuitive log creation, organization, and AI-powered insights—designed to capture thoughts like emails and archive them seamlessly.",
   "author": "AIGRAM Inc.",
   "isDesktopOnly": false
 }
