@@ -11,6 +11,7 @@ import {
 	MarkdownRenderer,
 	Platform,
 	FuzzySuggestModal,
+	requestUrl,
 } from "obsidian";
 
 const VIEW_TYPE = "brainstall-view";
@@ -170,11 +171,6 @@ class BrainstallView extends ItemView {
 		this.activeFileDisplay = this.inputContainer.createEl("div", {
 			cls: "brainstall-active-file-display",
 		});
-		this.activeFileDisplay.style.cursor = "pointer";
-		this.activeFileDisplay.style.display = "flex";
-		this.activeFileDisplay.style.alignItems = "center";
-		this.activeFileDisplay.style.overflow = "hidden";
-		this.activeFileDisplay.style.padding = "8px 30px 8px 12px"; // top right bottom left - クリアボタンのスペース
 		this.activeFileDisplay.setAttribute(
 			"title",
 			"クリックしてファイルを選択"
@@ -184,12 +180,6 @@ class BrainstallView extends ItemView {
 		this.fileDisplayContent = this.activeFileDisplay.createEl("span", {
 			cls: "brainstall-active-file-content",
 		});
-		this.fileDisplayContent.style.flex = "1";
-		this.fileDisplayContent.style.minWidth = "0";
-		this.fileDisplayContent.style.maxWidth = "calc(100% - 32px)"; // クリアボタン（24px幅 + right:8px = 32px）のスペースを確保
-		this.fileDisplayContent.style.overflow = "hidden";
-		this.fileDisplayContent.style.textOverflow = "ellipsis";
-		this.fileDisplayContent.style.whiteSpace = "nowrap";
 
 		// クリアボタン（閉じるボタンと同じ方法で追加）
 		this.clearFileBtn = this.activeFileDisplay.createEl("button", {
@@ -476,7 +466,11 @@ class BrainstallView extends ItemView {
 					const line = skeletonEl.createEl("div", {
 						cls: "brainstall-skeleton-line",
 					});
-					line.style.width = `${80 - i * 10}%`;
+					line.style.setProperty(
+						"--skeleton-width",
+						`${80 - i * 10}%`
+					);
+					line.style.width = `var(--skeleton-width)`;
 				}
 				// 先頭に挿入
 				postsList.insertBefore(skeletonEl, postsList.firstChild);
@@ -583,7 +577,11 @@ class BrainstallView extends ItemView {
 					const line = skeletonEl.createEl("div", {
 						cls: "brainstall-skeleton-line",
 					});
-					line.style.width = `${80 - i * 10}%`;
+					line.style.setProperty(
+						"--skeleton-width",
+						`${80 - i * 10}%`
+					);
+					line.style.width = `var(--skeleton-width)`;
 				}
 				// 先頭に挿入
 				postsList.insertBefore(skeletonEl, postsList.firstChild);
@@ -737,7 +735,7 @@ class BrainstallView extends ItemView {
 			cls: "brainstall-input-overlay hidden",
 		});
 		// オーバーレイを透過にして、後ろの要素を操作できるようにする
-		this.inputOverlay.style.pointerEvents = "none";
+		// pointer-eventsはCSSで設定済み
 
 		// 初期化
 		await this.updatePosts();
@@ -762,18 +760,16 @@ class BrainstallView extends ItemView {
 			this.fileDisplayContent.textContent = `📄 ${fileToDisplay.basename}`;
 			// ファイルが選択されている場合はクリアボタンを表示
 			if (this.clearFileBtn) {
-				this.clearFileBtn.style.display = "flex";
+				this.clearFileBtn.removeClass("hidden");
 			}
 		} else {
 			this.fileDisplayContent.textContent =
 				"📄 リンク元ファイルが選択されていません";
 			// ファイルが選択されていない場合はクリアボタンを非表示
 			if (this.clearFileBtn) {
-				this.clearFileBtn.style.display = "none";
+				this.clearFileBtn.addClass("hidden");
 			}
 		}
-
-		this.activeFileDisplay!.style.display = "block";
 
 		// 参照タブが表示されている場合は更新
 		if (
@@ -831,10 +827,10 @@ class BrainstallView extends ItemView {
 					const currentScrollTop = (postsList as HTMLElement)
 						.scrollTop;
 					(postsList as HTMLElement).style.setProperty(
-						"padding-bottom",
-						`${paddingNeeded}px`,
-						"important"
+						"--padding-bottom",
+						`${paddingNeeded}px`
 					);
+					(postsList as HTMLElement).addClass("padded");
 					// スクロール位置を復元
 					(postsList as HTMLElement).scrollTop = currentScrollTop;
 				}
@@ -842,9 +838,11 @@ class BrainstallView extends ItemView {
 				// オーバーレイの位置を設定
 				if (this.inputOverlay) {
 					const inputTop = inputSectionRect.top;
-					this.inputOverlay.style.height = `${inputTop}px`;
-					this.inputOverlay.style.top = "auto";
-					this.inputOverlay.style.bottom = "0px";
+					this.inputOverlay.style.setProperty(
+						"--overlay-height",
+						`${inputTop}px`
+					);
+					this.inputOverlay.addClass("positioned");
 				}
 			};
 
@@ -888,10 +886,7 @@ class BrainstallView extends ItemView {
 			// オーバーレイを非表示
 			if (this.inputOverlay) {
 				this.inputOverlay.addClass("hidden");
-				// オーバーレイの位置をリセット
-				this.inputOverlay.style.top = "";
-				this.inputOverlay.style.bottom = "";
-				this.inputOverlay.style.height = "";
+				this.inputOverlay.removeClass("positioned");
 			}
 			// リサイズハンドラーを削除
 			if (this.inputResizeHandler) {
@@ -915,9 +910,7 @@ class BrainstallView extends ItemView {
 				".brainstall-posts-list"
 			);
 			if (postsList) {
-				(postsList as HTMLElement).style.removeProperty(
-					"padding-bottom"
-				);
+				(postsList as HTMLElement).removeClass("padded");
 			}
 		}
 	}
@@ -1535,31 +1528,29 @@ ${articleContent}
 		apiKey: string,
 		model: string
 	): Promise<string> {
-		const response = await fetch(
-			"https://api.openai.com/v1/chat/completions",
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${apiKey}`,
-				},
-				body: JSON.stringify({
-					model: model || "gpt-4o-mini",
-					messages: [{ role: "user", content: prompt }],
-				}),
-			}
-		);
+		const response = await requestUrl({
+			url: "https://api.openai.com/v1/chat/completions",
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${apiKey}`,
+			},
+			body: JSON.stringify({
+				model: model || "gpt-4o-mini",
+				messages: [{ role: "user", content: prompt }],
+			}),
+		});
 
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
+		if (response.status !== 200) {
+			const errorData = JSON.parse(response.text || "{}");
 			throw new Error(
 				`OpenAI API error: ${response.status} - ${
-					errorData.error?.message || response.statusText
+					errorData.error?.message || "Unknown error"
 				}`
 			);
 		}
 
-		const data = await response.json();
+		const data = JSON.parse(response.text);
 		return data.choices[0].message.content;
 	}
 
@@ -1568,7 +1559,8 @@ ${articleContent}
 		apiKey: string,
 		model: string
 	): Promise<string> {
-		const response = await fetch("https://api.anthropic.com/v1/messages", {
+		const response = await requestUrl({
+			url: "https://api.anthropic.com/v1/messages",
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -1582,16 +1574,16 @@ ${articleContent}
 			}),
 		});
 
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
+		if (response.status !== 200) {
+			const errorData = JSON.parse(response.text || "{}");
 			throw new Error(
 				`Claude API error: ${response.status} - ${
-					errorData.error?.message || response.statusText
+					errorData.error?.message || "Unknown error"
 				}`
 			);
 		}
 
-		const data = await response.json();
+		const data = JSON.parse(response.text);
 		return data.content[0].text;
 	}
 
@@ -1600,31 +1592,29 @@ ${articleContent}
 		apiKey: string,
 		model: string
 	): Promise<string> {
-		const response = await fetch(
-			"https://api.groq.com/openai/v1/chat/completions",
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${apiKey}`,
-				},
-				body: JSON.stringify({
-					model: model || "llama-3.1-70b-versatile",
-					messages: [{ role: "user", content: prompt }],
-				}),
-			}
-		);
+		const response = await requestUrl({
+			url: "https://api.groq.com/openai/v1/chat/completions",
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${apiKey}`,
+			},
+			body: JSON.stringify({
+				model: model || "llama-3.1-70b-versatile",
+				messages: [{ role: "user", content: prompt }],
+			}),
+		});
 
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
+		if (response.status !== 200) {
+			const errorData = JSON.parse(response.text || "{}");
 			throw new Error(
 				`Groq API error: ${response.status} - ${
-					errorData.error?.message || response.statusText
+					errorData.error?.message || "Unknown error"
 				}`
 			);
 		}
 
-		const data = await response.json();
+		const data = JSON.parse(response.text);
 		return data.choices[0].message.content;
 	}
 
@@ -2058,26 +2048,11 @@ ${content}`;
 		const prioritySelectWrapper = filterRow.createEl("div", {
 			cls: "brainstall-priority-select-wrapper",
 		});
-		prioritySelectWrapper.style.position = "relative";
-		prioritySelectWrapper.style.flex = "1";
-		prioritySelectWrapper.style.minWidth = "120px";
-		prioritySelectWrapper.style.maxWidth = "400px";
 
 		// 表示用のプレースホルダー
 		const displayText = prioritySelectWrapper.createEl("div", {
 			cls: "brainstall-priority-select-display",
 		});
-		displayText.style.padding = "4px 8px";
-		displayText.style.border =
-			"1px solid var(--background-modifier-border)";
-		displayText.style.borderRadius = "4px";
-		displayText.style.background = "var(--background-primary)";
-		displayText.style.color = "var(--text-normal)";
-		displayText.style.fontSize = "13px";
-		displayText.style.cursor = "pointer";
-		displayText.style.display = "flex";
-		displayText.style.alignItems = "center";
-		displayText.style.justifyContent = "space-between";
 
 		const displayLabel = displayText.createEl("span", {
 			text:
@@ -2092,28 +2067,11 @@ ${content}`;
 			text: "▼",
 			cls: "brainstall-priority-select-arrow",
 		});
-		displayArrow.style.fontSize = "10px";
-		displayArrow.style.color = "var(--text-muted)";
-		displayArrow.style.marginLeft = "8px";
 
 		// ドロップダウンリスト（非表示）
 		const dropdownList = prioritySelectWrapper.createEl("div", {
 			cls: "brainstall-priority-dropdown-list",
 		});
-		dropdownList.style.display = "none";
-		dropdownList.style.position = "absolute";
-		dropdownList.style.top = "100%";
-		dropdownList.style.left = "0";
-		dropdownList.style.right = "0";
-		dropdownList.style.background = "var(--background-primary)";
-		dropdownList.style.border =
-			"1px solid var(--background-modifier-border)";
-		dropdownList.style.borderRadius = "4px";
-		dropdownList.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
-		dropdownList.style.marginTop = "4px";
-		dropdownList.style.maxHeight = "200px";
-		dropdownList.style.overflowY = "auto";
-		dropdownList.style.zIndex = "1000";
 
 		// ドロップダウンリスト内のクリックで閉じないようにする（capture phaseで阻止）
 		dropdownList.addEventListener(
@@ -2138,21 +2096,6 @@ ${content}`;
 			const optionItem = dropdownList.createEl("label", {
 				cls: "brainstall-priority-option-item",
 			});
-			optionItem.style.display = "flex";
-			optionItem.style.alignItems = "center";
-			optionItem.style.padding = "4px 8px";
-			optionItem.style.cursor = "pointer";
-			optionItem.style.borderBottom =
-				"1px solid var(--background-modifier-border)";
-			optionItem.style.fontSize = "12px";
-
-			optionItem.addEventListener("mouseenter", () => {
-				optionItem.style.background =
-					"var(--background-modifier-hover)";
-			});
-			optionItem.addEventListener("mouseleave", () => {
-				optionItem.style.background = "transparent";
-			});
 
 			const checkbox = optionItem.createEl("input", {
 				type: "checkbox",
@@ -2160,21 +2103,13 @@ ${content}`;
 			}) as HTMLInputElement;
 			checkbox.value = i.toString();
 			checkbox.checked = this.selectedPriorities.includes(i);
-			checkbox.style.marginRight = "6px";
-			checkbox.style.width = "14px";
-			checkbox.style.height = "14px";
-			checkbox.style.cursor = "pointer";
 
 			const labelText = optionItem.createEl("span", {
 				text: "⭐".repeat(i) + (i === 0 ? "なし" : ""),
 			});
-			labelText.style.fontSize = "11px";
-			labelText.style.lineHeight = "1.2";
 			// 星アイコンを小さくする
 			if (i > 0) {
-				labelText.style.display = "inline-block";
-				labelText.style.transform = "scale(0.85)";
-				labelText.style.transformOrigin = "left center";
+				labelText.addClass("scaled");
 			}
 
 			// チェックボックスのクリックイベントで伝播を停止（capture phaseで阻止）
@@ -2242,8 +2177,8 @@ ${content}`;
 		displayText.addEventListener("click", (e) => {
 			e.stopPropagation();
 			isOpen = !isOpen;
-			dropdownList.style.display = isOpen ? "block" : "none";
 			if (isOpen) {
+				dropdownList.addClass("open");
 				displayArrow.textContent = "▲";
 				// 既存のハンドラーを削除してから新しいものを追加
 				if (closeHandler) {
@@ -2255,7 +2190,7 @@ ${content}`;
 					const target = e.target as Node;
 					if (target && !prioritySelectWrapper.contains(target)) {
 						isOpen = false;
-						dropdownList.style.display = "none";
+						dropdownList.removeClass("open");
 						displayArrow.textContent = "▼";
 						if (closeHandler) {
 							document.removeEventListener(
@@ -2270,6 +2205,7 @@ ${content}`;
 					document.addEventListener("mousedown", closeHandler!, true); // capture phaseで監視
 				}, 0);
 			} else {
+				dropdownList.removeClass("open");
 				displayArrow.textContent = "▼";
 				if (closeHandler) {
 					document.removeEventListener("mousedown", closeHandler);
@@ -2584,27 +2520,11 @@ ${content}`;
 				text: "🗑️ 削除",
 				cls: "brainstall-bottom-action-btn",
 			});
-			deleteBtn.style.position = "relative";
-			deleteBtn.style.overflow = "hidden";
 
 			// プログレスバー
 			const deleteProgress = deleteBtn.createEl("div", {
 				cls: "brainstall-progress-bar",
 			});
-			deleteProgress.style.position = "absolute";
-			deleteProgress.style.left = "0";
-			deleteProgress.style.top = "0";
-			deleteProgress.style.height = "100%";
-			deleteProgress.style.width = "0%";
-			deleteProgress.style.background = "var(--interactive-accent)";
-			deleteProgress.style.opacity = "0.3";
-			deleteProgress.style.transition = "width 0.1s linear";
-			deleteProgress.style.zIndex = "0";
-			deleteProgress.style.pointerEvents = "none";
-
-			// ボタンテキストを前面に
-			deleteBtn.style.zIndex = "1";
-			deleteBtn.style.position = "relative";
 
 			// 長押し検出用
 			let deleteLongPressTimer: number | null = null;
@@ -2618,7 +2538,7 @@ ${content}`;
 				deleteExecuted = false;
 				deleteWasLongPress = true; // 長押し開始
 				deleteCancelled = false; // リセット
-				deleteProgress.style.width = "0%";
+				deleteProgress.style.setProperty("--progress-width", "0%");
 				// 既存の実行待機タイマーがあればキャンセル
 				if (deleteExecutionTimer) {
 					clearTimeout(deleteExecutionTimer);
@@ -2630,7 +2550,10 @@ ${content}`;
 				deleteProgressInterval = window.setInterval(() => {
 					const elapsed = Date.now() - startTime;
 					const progress = Math.min((elapsed / 1000) * 100, 100);
-					deleteProgress.style.width = `${progress}%`;
+					deleteProgress.style.setProperty(
+						"--progress-width",
+						`${progress}%`
+					);
 				}, 10);
 
 				deleteLongPressTimer = window.setTimeout(async () => {
@@ -2640,7 +2563,10 @@ ${content}`;
 						clearInterval(deleteProgressInterval);
 						deleteProgressInterval = null;
 					}
-					deleteProgress.style.width = "100%";
+					deleteProgress.style.setProperty(
+						"--progress-width",
+						"100%"
+					);
 					// プログレスバーが100%に達してから実行（視覚的なマージン）
 					// この50ms待機中もキャンセル可能にする
 					deleteCancelled = false; // リセット
@@ -2649,13 +2575,19 @@ ${content}`;
 						// 50ms待機中にキャンセルされていない場合のみ実行
 						if (deleteCancelled || deleteExecuted) {
 							// キャンセルされたか、既に実行済み
-							deleteProgress.style.width = "0%";
+							deleteProgress.style.setProperty(
+								"--progress-width",
+								"0%"
+							);
 							return;
 						}
 						deleteExecuted = true;
 						deleteWasLongPress = false;
 						await this.deletePost(file);
-						deleteProgress.style.width = "0%";
+						deleteProgress.style.setProperty(
+							"--progress-width",
+							"0%"
+						);
 					}, 50);
 				}, 1000);
 			});
@@ -2677,7 +2609,7 @@ ${content}`;
 					clearInterval(deleteProgressInterval);
 					deleteProgressInterval = null;
 				}
-				deleteProgress.style.width = "0%";
+				deleteProgress.style.setProperty("--progress-width", "0%");
 			});
 
 			deleteBtn.addEventListener("mouseleave", () => {
@@ -2697,7 +2629,7 @@ ${content}`;
 					clearInterval(deleteProgressInterval);
 					deleteProgressInterval = null;
 				}
-				deleteProgress.style.width = "0%";
+				deleteProgress.style.setProperty("--progress-width", "0%");
 			});
 
 			deleteBtn.addEventListener("click", async (e) => {
@@ -2723,28 +2655,12 @@ ${content}`;
 					text: "📁 復元",
 					cls: "brainstall-bottom-action-btn",
 				});
-				unarchiveBtn.style.position = "relative";
-				unarchiveBtn.style.overflow = "hidden";
+				// スタイルはCSSクラスで設定済み
 
 				// プログレスバー
 				const unarchiveProgress = unarchiveBtn.createEl("div", {
 					cls: "brainstall-progress-bar",
 				});
-				unarchiveProgress.style.position = "absolute";
-				unarchiveProgress.style.left = "0";
-				unarchiveProgress.style.top = "0";
-				unarchiveProgress.style.height = "100%";
-				unarchiveProgress.style.width = "0%";
-				unarchiveProgress.style.background =
-					"var(--interactive-accent)";
-				unarchiveProgress.style.opacity = "0.3";
-				unarchiveProgress.style.transition = "width 0.1s linear";
-				unarchiveProgress.style.zIndex = "0";
-				unarchiveProgress.style.pointerEvents = "none";
-
-				// ボタンテキストを前面に
-				unarchiveBtn.style.zIndex = "1";
-				unarchiveBtn.style.position = "relative";
 
 				// 長押し検出用
 				let unarchiveLongPressTimer: number | null = null;
@@ -2758,7 +2674,10 @@ ${content}`;
 					unarchiveExecuted = false;
 					unarchiveWasLongPress = true; // 長押し開始
 					unarchiveCancelled = false; // リセット
-					unarchiveProgress.style.width = "0%";
+					unarchiveProgress.style.setProperty(
+						"--progress-width",
+						"0%"
+					);
 					// 既存の実行待機タイマーがあればキャンセル
 					if (unarchiveExecutionTimer) {
 						clearTimeout(unarchiveExecutionTimer);
@@ -2770,7 +2689,10 @@ ${content}`;
 					unarchiveProgressInterval = window.setInterval(() => {
 						const elapsed = Date.now() - startTime;
 						const progress = Math.min((elapsed / 1000) * 100, 100);
-						unarchiveProgress.style.width = `${progress}%`;
+						unarchiveProgress.style.setProperty(
+							"--progress-width",
+							`${progress}%`
+						);
 					}, 10);
 
 					unarchiveLongPressTimer = window.setTimeout(async () => {
@@ -2780,7 +2702,10 @@ ${content}`;
 							clearInterval(unarchiveProgressInterval);
 							unarchiveProgressInterval = null;
 						}
-						unarchiveProgress.style.width = "100%";
+						unarchiveProgress.style.setProperty(
+							"--progress-width",
+							"100%"
+						);
 						// プログレスバーが100%に達してから実行（視覚的なマージン）
 						// この50ms待機中もキャンセル可能にする
 						unarchiveCancelled = false; // リセット
@@ -2790,13 +2715,19 @@ ${content}`;
 								// 50ms待機中にキャンセルされていない場合のみ実行
 								if (unarchiveCancelled || unarchiveExecuted) {
 									// キャンセルされたか、既に実行済み
-									unarchiveProgress.style.width = "0%";
+									unarchiveProgress.style.setProperty(
+										"--progress-width",
+										"0%"
+									);
 									return;
 								}
 								unarchiveExecuted = true;
 								unarchiveWasLongPress = false;
 								await this.archivePost(file, false, true);
-								unarchiveProgress.style.width = "0%";
+								unarchiveProgress.style.setProperty(
+									"--progress-width",
+									"0%"
+								);
 							},
 							50
 						);
@@ -2820,7 +2751,10 @@ ${content}`;
 						clearInterval(unarchiveProgressInterval);
 						unarchiveProgressInterval = null;
 					}
-					unarchiveProgress.style.width = "0%";
+					unarchiveProgress.style.setProperty(
+						"--progress-width",
+						"0%"
+					);
 				});
 
 				unarchiveBtn.addEventListener("mouseleave", () => {
@@ -2840,7 +2774,10 @@ ${content}`;
 						clearInterval(unarchiveProgressInterval);
 						unarchiveProgressInterval = null;
 					}
-					unarchiveProgress.style.width = "0%";
+					unarchiveProgress.style.setProperty(
+						"--progress-width",
+						"0%"
+					);
 				});
 
 				unarchiveBtn.addEventListener("click", async (e) => {
@@ -2864,27 +2801,12 @@ ${content}`;
 					text: "📁 アーカイブ",
 					cls: "brainstall-bottom-action-btn",
 				});
-				archiveBtn.style.position = "relative";
-				archiveBtn.style.overflow = "hidden";
+				// スタイルはCSSクラスで設定済み
 
 				// プログレスバー
 				const archiveProgress = archiveBtn.createEl("div", {
 					cls: "brainstall-progress-bar",
 				});
-				archiveProgress.style.position = "absolute";
-				archiveProgress.style.left = "0";
-				archiveProgress.style.top = "0";
-				archiveProgress.style.height = "100%";
-				archiveProgress.style.width = "0%";
-				archiveProgress.style.background = "var(--interactive-accent)";
-				archiveProgress.style.opacity = "0.3";
-				archiveProgress.style.transition = "width 0.1s linear";
-				archiveProgress.style.zIndex = "0";
-				archiveProgress.style.pointerEvents = "none";
-
-				// ボタンテキストを前面に
-				archiveBtn.style.zIndex = "1";
-				archiveBtn.style.position = "relative";
 
 				// 長押し検出用
 				let archiveLongPressTimer: number | null = null;
@@ -2898,7 +2820,7 @@ ${content}`;
 					archiveExecuted = false;
 					archiveWasLongPress = true; // 長押し開始
 					archiveCancelled = false; // リセット
-					archiveProgress.style.width = "0%";
+					archiveProgress.style.setProperty("--progress-width", "0%");
 					// 既存の実行待機タイマーがあればキャンセル
 					if (archiveExecutionTimer) {
 						clearTimeout(archiveExecutionTimer);
@@ -2910,7 +2832,10 @@ ${content}`;
 					archiveProgressInterval = window.setInterval(() => {
 						const elapsed = Date.now() - startTime;
 						const progress = Math.min((elapsed / 1000) * 100, 100);
-						archiveProgress.style.width = `${progress}%`;
+						archiveProgress.style.setProperty(
+							"--progress-width",
+							`${progress}%`
+						);
 					}, 10);
 
 					archiveLongPressTimer = window.setTimeout(async () => {
@@ -2920,7 +2845,10 @@ ${content}`;
 							clearInterval(archiveProgressInterval);
 							archiveProgressInterval = null;
 						}
-						archiveProgress.style.width = "100%";
+						archiveProgress.style.setProperty(
+							"--progress-width",
+							"100%"
+						);
 						// プログレスバーが100%に達してから実行（視覚的なマージン）
 						// この50ms待機中もキャンセル可能にする
 						archiveCancelled = false; // リセット
@@ -2929,13 +2857,19 @@ ${content}`;
 							// 50ms待機中にキャンセルされていない場合のみ実行
 							if (archiveCancelled || archiveExecuted) {
 								// キャンセルされたか、既に実行済み
-								archiveProgress.style.width = "0%";
+								archiveProgress.style.setProperty(
+									"--progress-width",
+									"0%"
+								);
 								return;
 							}
 							archiveExecuted = true;
 							archiveWasLongPress = false;
 							await this.archivePost(file, true, true);
-							archiveProgress.style.width = "0%";
+							archiveProgress.style.setProperty(
+								"--progress-width",
+								"0%"
+							);
 						}, 50);
 					}, 1000);
 				});
@@ -2957,7 +2891,7 @@ ${content}`;
 						clearInterval(archiveProgressInterval);
 						archiveProgressInterval = null;
 					}
-					archiveProgress.style.width = "0%";
+					archiveProgress.style.setProperty("--progress-width", "0%");
 				});
 
 				archiveBtn.addEventListener("mouseleave", () => {
@@ -2977,7 +2911,7 @@ ${content}`;
 						clearInterval(archiveProgressInterval);
 						archiveProgressInterval = null;
 					}
-					archiveProgress.style.width = "0%";
+					archiveProgress.style.setProperty("--progress-width", "0%");
 				});
 
 				archiveBtn.addEventListener("click", async (e) => {
@@ -3005,27 +2939,12 @@ ${content}`;
 					cls: "brainstall-bottom-action-btn",
 				});
 				moveBtn.setAttribute("title", "Topicsに追加");
-				moveBtn.style.position = "relative";
-				moveBtn.style.overflow = "hidden";
+				// スタイルはCSSクラスで設定済み
 
 				// プログレスバー
 				const moveProgress = moveBtn.createEl("div", {
 					cls: "brainstall-progress-bar",
 				});
-				moveProgress.style.position = "absolute";
-				moveProgress.style.left = "0";
-				moveProgress.style.top = "0";
-				moveProgress.style.height = "100%";
-				moveProgress.style.width = "0%";
-				moveProgress.style.background = "var(--interactive-accent)";
-				moveProgress.style.opacity = "0.3";
-				moveProgress.style.transition = "width 0.1s linear";
-				moveProgress.style.zIndex = "0";
-				moveProgress.style.pointerEvents = "none";
-
-				// ボタンテキストを前面に
-				moveBtn.style.zIndex = "1";
-				moveBtn.style.position = "relative";
 
 				// 長押し検出用
 				let moveLongPressTimer: number | null = null;
@@ -3039,7 +2958,7 @@ ${content}`;
 					moveExecuted = false;
 					moveWasLongPress = true; // 長押し開始
 					moveCancelled = false; // リセット
-					moveProgress.style.width = "0%";
+					moveProgress.style.setProperty("--progress-width", "0%");
 					// 既存の実行待機タイマーがあればキャンセル
 					if (moveExecutionTimer) {
 						clearTimeout(moveExecutionTimer);
@@ -3051,7 +2970,10 @@ ${content}`;
 					moveProgressInterval = window.setInterval(() => {
 						const elapsed = Date.now() - startTime;
 						const progress = Math.min((elapsed / 1000) * 100, 100);
-						moveProgress.style.width = `${progress}%`;
+						moveProgress.style.setProperty(
+							"--progress-width",
+							`${progress}%`
+						);
 					}, 10);
 
 					moveLongPressTimer = window.setTimeout(async () => {
@@ -3061,7 +2983,10 @@ ${content}`;
 							clearInterval(moveProgressInterval);
 							moveProgressInterval = null;
 						}
-						moveProgress.style.width = "100%";
+						moveProgress.style.setProperty(
+							"--progress-width",
+							"100%"
+						);
 						// プログレスバーが100%に達してから実行（視覚的なマージン）
 						// この50ms待機中もキャンセル可能にする
 						moveCancelled = false; // リセット
@@ -3070,13 +2995,19 @@ ${content}`;
 							// 50ms待機中にキャンセルされていない場合のみ実行
 							if (moveCancelled || moveExecuted) {
 								// キャンセルされたか、既に実行済み
-								moveProgress.style.width = "0%";
+								moveProgress.style.setProperty(
+									"--progress-width",
+									"0%"
+								);
 								return;
 							}
 							moveExecuted = true;
 							moveWasLongPress = false;
 							await this.moveToTopics(file, true);
-							moveProgress.style.width = "0%";
+							moveProgress.style.setProperty(
+								"--progress-width",
+								"0%"
+							);
 						}, 50);
 					}, 1000);
 				});
@@ -3098,7 +3029,7 @@ ${content}`;
 						clearInterval(moveProgressInterval);
 						moveProgressInterval = null;
 					}
-					moveProgress.style.width = "0%";
+					moveProgress.style.setProperty("--progress-width", "0%");
 				});
 
 				moveBtn.addEventListener("mouseleave", () => {
@@ -3118,7 +3049,7 @@ ${content}`;
 						clearInterval(moveProgressInterval);
 						moveProgressInterval = null;
 					}
-					moveProgress.style.width = "0%";
+					moveProgress.style.setProperty("--progress-width", "0%");
 				});
 
 				moveBtn.addEventListener("click", async (e) => {
@@ -3247,16 +3178,25 @@ ${content}`;
 				// 通知数が0でない場合は濃い色、0の場合は薄い色
 				if (count > 0) {
 					cell.textContent = String(count);
-					cell.style.backgroundColor = `color-mix(in srgb, var(--interactive-accent) ${
-						opacity * 100
-					}%, transparent)`;
-					cell.style.color =
-						opacity > 0.6 ? "white" : "var(--text-normal)";
-					cell.style.opacity = "1";
+					cell.style.setProperty(
+						"--cell-bg-color",
+						`color-mix(in srgb, var(--interactive-accent) ${
+							opacity * 100
+						}%, transparent)`
+					);
+					cell.style.setProperty(
+						"--cell-text-color",
+						opacity > 0.6 ? "white" : "var(--text-normal)"
+					);
+					cell.style.setProperty("--cell-opacity", "1");
+					cell.addClass("filled");
 				} else {
-					cell.style.backgroundColor =
-						"var(--background-modifier-border)";
-					cell.style.opacity = "0.3";
+					cell.style.setProperty(
+						"--cell-bg-color",
+						"var(--background-modifier-border)"
+					);
+					cell.style.setProperty("--cell-opacity", "0.3");
+					cell.removeClass("filled");
 				}
 			}
 		}
@@ -3640,7 +3580,7 @@ ${content}`;
 				? (activePostsList as HTMLElement).scrollTop
 				: 0;
 
-			await this.app.vault.delete(file);
+			await this.app.fileManager.trashFile(file);
 			await this.updatePosts();
 			await this.updateGrass();
 			await this.updateStats();
@@ -3727,10 +3667,9 @@ ${content}`;
 
 			// 既存のファイルがある場合は追記
 			if (await this.app.vault.adapter.exists(newPath)) {
-				const existingFile = this.app.vault.getAbstractFileByPath(
-					newPath
-				) as TFile;
-				if (existingFile) {
+				const existingFile =
+					this.app.vault.getAbstractFileByPath(newPath);
+				if (existingFile instanceof TFile) {
 					const existingContent = await this.app.vault.read(
 						existingFile
 					);
@@ -3886,15 +3825,10 @@ ${content}`;
 		const titleRow = header.createEl("div", {
 			cls: "brainstall-reference-title-row",
 		});
-		titleRow.style.display = "flex";
-		titleRow.style.alignItems = "center";
-		titleRow.style.justifyContent = "space-between";
-		titleRow.style.marginBottom = "20px";
 
 		const title = titleRow.createEl("h3", {
 			text: "🔗 参照",
 		});
-		title.style.margin = "0";
 
 		// 更新ボタン
 		const refreshBtn = titleRow.createEl("button", {
@@ -3918,27 +3852,11 @@ ${content}`;
 		const fileDisplay = header.createEl("div", {
 			cls: "brainstall-reference-file-display",
 		});
-		fileDisplay.style.cursor = "pointer";
-		fileDisplay.style.padding = "8px 12px";
-		fileDisplay.style.marginBottom = "20px";
-		fileDisplay.style.background = "var(--background-modifier-hover)";
-		fileDisplay.style.borderRadius = "6px";
 		fileDisplay.setAttribute("title", "クリックしてファイルを選択");
-
-		fileDisplay.style.position = "relative";
-		fileDisplay.style.display = "flex";
-		fileDisplay.style.alignItems = "center";
-		fileDisplay.style.paddingRight = "40px"; // クリアボタンのスペース
-		fileDisplay.style.overflow = "hidden"; // 親要素でもoverflowを制御
 
 		const fileDisplayContent = fileDisplay.createEl("span", {
 			cls: "brainstall-reference-file-content",
 		});
-		fileDisplayContent.style.flex = "1";
-		fileDisplayContent.style.minWidth = "0";
-		fileDisplayContent.style.whiteSpace = "nowrap";
-		fileDisplayContent.style.overflow = "hidden";
-		fileDisplayContent.style.textOverflow = "ellipsis";
 
 		if (!targetFile) {
 			fileDisplayContent.textContent = "📄 ファイルが選択されていません";
@@ -3955,10 +3873,7 @@ ${content}`;
 			}) as HTMLButtonElement;
 			clearBtn.textContent = "×";
 			clearBtn.setAttribute("title", "選択をクリア");
-			clearBtn.style.position = "absolute";
-			clearBtn.style.right = "8px";
-			clearBtn.style.top = "50%";
-			clearBtn.style.transform = "translateY(-50%)";
+			// スタイルはCSSクラスで設定済み
 			clearBtn.addEventListener("click", (e) => {
 				e.preventDefault();
 				e.stopPropagation();
@@ -4196,10 +4111,6 @@ ${content}`;
 		const contentWrapper = item.createEl("div", {
 			cls: "brainstall-reference-keyword-content",
 		});
-		contentWrapper.style.display = "flex";
-		contentWrapper.style.flexDirection = "column";
-		contentWrapper.style.flex = "1";
-		contentWrapper.style.minWidth = "0";
 
 		const fileNameSpan = contentWrapper.createEl("span", {
 			text: file.basename,
@@ -4211,9 +4122,6 @@ ${content}`;
 		});
 		const tagsArray = Array.from(commonTags).sort();
 		keywordsSpan.textContent = tagsArray.join(", ");
-		keywordsSpan.style.fontSize = "12px";
-		keywordsSpan.style.color = "var(--text-muted)";
-		keywordsSpan.style.marginTop = "4px";
 
 		await this.createReferenceItemContent(
 			itemWrapper,
@@ -4237,8 +4145,7 @@ ${content}`;
 		let isExpanded = false;
 		let contentLoaded = false;
 
-		// 要素全体をクリック可能にする
-		item.style.cursor = "pointer";
+		// 要素全体をクリック可能にする（スタイルはCSSクラスで設定済み）
 		item.addEventListener("click", async (e) => {
 			if (!contentLoaded) {
 				try {
@@ -4265,8 +4172,6 @@ ${content}`;
 						cls: "brainstall-reference-open-newtab-btn",
 						text: "📂 ソースを新しいタブで開く",
 					});
-					openInNewTabBtn.style.marginTop = "12px";
-					openInNewTabBtn.style.width = "100%";
 					openInNewTabBtn.addEventListener("click", (e) => {
 						e.stopPropagation();
 						const leaf = this.app.workspace.getLeaf(true);
@@ -4481,10 +4386,10 @@ export default class MyPlugin extends Plugin {
 			this.openBrainstallPanel();
 		});
 
-		// コマンド: Brainstallを開く
+		// コマンド: メインビューを開く
 		this.addCommand({
-			id: "open-brainstall",
-			name: "Brainstall を開く",
+			id: "open-view",
+			name: "メインビューを開く",
 			callback: () => {
 				this.openBrainstallPanel();
 			},

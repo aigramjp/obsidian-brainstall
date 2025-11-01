@@ -1,7 +1,7 @@
 {
   "id": "brainstall",
   "name": "Brainstall",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "minAppVersion": "0.15.0",
   "description": "A lightweight plugin for intuitive log creation, organization, and AI-powered insights—designed to capture thoughts like emails and archive them seamlessly.",
   "author": "AIGRAM Inc.",
